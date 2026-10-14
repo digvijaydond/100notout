@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>100 Not Out Score Tracker</title>
+  <link rel="preconnect" href="https://api.fontshare.com" />
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet" />
+  <style>
+    :root, [data-theme="light"] {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+      --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
+      --space-12: 3rem; --space-16: 4rem;
+      --color-bg: #f7f6f2;
+      --color-surface: #f9f8f5;
+      --color-surface-2: #fbfbf9;
+      --color-border: #d4d1ca;
+      --color-divider: #dcd9d5;
+      --color-text: #28251d;
+      --color-text-muted: #66645f;
+      --color-text-faint: #9f9c96;
+      --color-primary: #01696f;
+      --color-primary-hover: #0c4e54;
+      --color-primary-highlight: #d9e9e7;
+      --color-warning: #964219;
+      --color-error: #a12c7b;
+      --color-success: #437a22;
+      --radius-md: 0.75rem;
+      --radius-lg: 1rem;
+      --radius-xl: 1.25rem;
+      --radius-full: 9999px;
+      --shadow-sm: 0 1px 2px rgba(25, 24, 20, 0.08);
+      --shadow-md: 0 10px 30px rgba(25, 24, 20, 0.10);
+      --transition-interactive: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+      --font-body: 'Satoshi', 'Inter', sans-serif;
+      --font-display: 'Satoshi', 'Inter', sans-serif;
+    }
+
+    [data-theme="dark"] {
+      --color-bg: #171614;
+      --color-surface: #1c1b19;
+      --color-surface-2: #201f1d;
+      --color-border: #393836;
+      --color-divider: #2a2927;
+      --color-text: #ece9e2;
+      --color-text-muted: #b7b3aa;
+      --color-text-faint: #88847c;
+      --color-primary: #4f98a3;
+      --color-primary-hover: #76b8c2;
+      --color-primary-highlight: #27373a;
+      --color-warning: #e08a4f;
+      --color-error: #d163a7;
+      --color-success: #83be5b;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.24);
+      --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.28);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { color-scheme: light dark; scroll-behavior: smooth; }
+    body {
+      min-height: 100dvh;
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      line-height: 1.55;
+      color: var(--color-text);
+      background:
+        radial-gradient(circle at top left, rgba(1, 105, 111, 0.16), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(150, 66, 25, 0.10), transparent 24%),
+        linear-gradient(180deg, var(--color-bg) 0%, var(--color-surface) 100%);
+      background-attachment: fixed;
+    }
+
+    [data-theme="dark"] body {
+      background:
+        radial-gradient(circle at top left, rgba(79, 152, 163, 0.18), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(224, 138, 79, 0.10), transparent 24%),
+        linear-gradient(180deg, #171614 0%, #1c1b19 100%);
+      background-attachment: fixed;
+    }
+
+    button, input, select { font: inherit; }
+    button {
+      border: 0;
+      cursor: pointer;
+      transition: transform var(--transition-interactive), background var(--transition-interactive), color var(--transition-interactive), border-color var(--transition-interactive), box-shadow var(--transition-interactive);
+    }
+    button:hover { transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+    :focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+    .app { width: min(1120px, calc(100% - 2rem)); margin: 0 auto; padding: var(--space-6) 0 var(--space-12); }
+    .skip-link { position: absolute; left: var(--space-4); top: -100px; background: var(--color-primary); color: white; padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); z-index: 1000; text-decoration: none; }
+    .skip-link:focus { top: var(--space-4); }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); margin-bottom: var(--space-6); padding: var(--space-4) 0; }
+    .brand { display: flex; align-items: center; gap: var(--space-3); }
+    .logo { width: 42px; height: 42px; padding: 9px; border-radius: var(--radius-md); color: var(--color-primary); background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface)); box-shadow: var(--shadow-sm); }
+    .brand h1 { font-family: var(--font-display); font-size: var(--text-xl); line-height: 1.05; letter-spacing: -0.03em; }
+    .brand p { color: var(--color-text-muted); font-size: var(--text-sm); margin-top: var(--space-1); }
+    .toolbar { display: flex; gap: var(--space-3); flex-wrap: wrap; justify-content: flex-end; }
+
+    .theme-toggle, .secondary-btn, .primary-btn, .warning-btn {
+      min-height: 44px; padding: 0.8rem 1rem; border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: 700;
+    }
+    .theme-toggle, .secondary-btn {
+      background: var(--color-surface); color: var(--color-text); border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent); box-shadow: var(--shadow-sm);
+    }
+    .primary-btn { background: var(--color-primary); color: white; box-shadow: var(--shadow-sm); }
+    .primary-btn:hover { background: var(--color-primary-hover); }
+    .warning-btn { background: color-mix(in srgb, var(--color-warning) 14%, var(--color-surface)); color: var(--color-warning); border: 1px solid color-mix(in srgb, var(--color-warning) 18%, transparent); }
+
+    .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: var(--space-5); margin-bottom: var(--space-6); }
+    .panel { background: color-mix(in srgb, var(--color-surface) 88%, transparent); border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); border-radius: var(--radius-xl); box-shadow: var(--shadow-md); backdrop-filter: blur(10px); }
+    .hero-card, .round-panel, .players-panel, .penalty-panel { padding: var(--space-6); }
+    .hero-card h2, .round-panel h2, .players-panel h2, .penalty-panel h2 { font-size: var(--text-lg); line-height: 1.1; margin-bottom: var(--space-3); }
+    .hero-card p, .stat-card p, .empty-state p, .round-summary, .penalty-note { color: var(--color-text-muted); }
+
+    .rules { display: grid; gap: var(--space-3); margin-top: var(--space-5); }
+    .rule { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-3) var(--space-4); border-radius: var(--radius-lg); background: var(--color-surface-2); border: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent); }
+    .rule-badge { flex: 0 0 34px; height: 34px; border-radius: var(--radius-full); display: grid; place-items: center; font-size: var(--text-sm); font-weight: 900; color: var(--color-primary); background: var(--color-primary-highlight); }
+
+    .stats { display: grid; gap: var(--space-4); align-content: start; }
+    .stat-card { padding: var(--space-5); }
+    .stat-label { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.12em; color: var(--color-text-faint); margin-bottom: var(--space-2); }
+    .stat-value { font-size: var(--text-xl); line-height: 1; font-weight: 900; font-variant-numeric: tabular-nums lining-nums; margin-bottom: var(--space-2); }
+
+    .layout { display: grid; grid-template-columns: 1fr 1.1fr; gap: var(--space-5); align-items: start; }
+    .left-stack { display: grid; gap: var(--space-5); }
+    .form-grid, .penalty-grid { display: grid; grid-template-columns: 1fr auto; gap: var(--space-3); margin-top: var(--space-4); }
+    .field, .score-input, .select-field { width: 100%; min-height: 48px; padding: 0.85rem 0.95rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface-2); color: var(--color-text); }
+    .field::placeholder, .score-input::placeholder { color: var(--color-text-faint); }
+    .round-actions { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-top: var(--space-5); }
+    .round-grid, .players-list { display: grid; gap: var(--space-4); margin-top: var(--space-5); }
+
+    .player-score-row { display: grid; grid-template-columns: 1fr minmax(120px, 160px); gap: var(--space-3); align-items: center; padding: var(--space-4); border-radius: var(--radius-lg); background: var(--color-surface-2); border: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent); }
+    .player-meta { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+    .player-name { font-weight: 800; font-size: var(--text-base); }
+    .player-state { font-size: var(--text-xs); color: var(--color-text-muted); margin-top: var(--space-1); }
+
+    .chip { display: inline-flex; align-items: center; justify-content: center; min-height: 30px; padding: 0.2rem 0.65rem; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 800; letter-spacing: 0.02em; white-space: nowrap; }
+    .chip.live { background: var(--color-primary-highlight); color: var(--color-primary); }
+    .chip.out { background: color-mix(in srgb, var(--color-error) 12%, var(--color-surface)); color: var(--color-error); }
+    .chip.safe { background: color-mix(in srgb, var(--color-success) 12%, var(--color-surface)); color: var(--color-success); }
+
+    .player-card { padding: var(--space-5); border-radius: var(--radius-lg); background: var(--color-surface-2); border: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent); }
+    .player-card-top, .player-card-bottom { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+    .player-card-bottom { margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--color-divider); flex-wrap: wrap; }
+    .score-total { font-size: var(--text-lg); font-weight: 900; font-variant-numeric: tabular-nums lining-nums; }
+    .muted { color: var(--color-text-muted); font-size: var(--text-sm); }
+
+    .empty-state { margin-top: var(--space-5); padding: var(--space-8); border: 1px dashed color-mix(in srgb, var(--color-text) 16%, transparent); border-radius: var(--radius-lg); background: color-mix(in srgb, var(--color-surface-2) 78%, transparent); text-align: center; }
+    .status-banner { margin-top: var(--space-4); padding: var(--space-4); border-radius: var(--radius-lg); background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface)); border: 1px solid color-mix(in srgb, var(--color-primary) 18%, transparent); color: var(--color-text); font-size: var(--text-sm); }
+    .winner-banner { margin-top: var(--space-4); padding: var(--space-4); border-radius: var(--radius-lg); background: color-mix(in srgb, var(--color-success) 14%, var(--color-surface)); border: 1px solid color-mix(in srgb, var(--color-success) 20%, transparent); color: var(--color-text); font-weight: 700; }
+    .helper { margin-top: var(--space-3); font-size: var(--text-sm); color: var(--color-text-muted); }
+    .inline-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+    .mini-btn { min-height: 36px; padding: 0.45rem 0.8rem; border-radius: var(--radius-full); background: var(--color-surface); color: var(--color-text-muted); border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); font-size: var(--text-xs); font-weight: 700; }
+
+    @media (max-width: 900px) {
+      .hero, .layout { grid-template-columns: 1fr; }
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .toolbar { justify-content: flex-start; }
+    }
+
+    @media (max-width: 640px) {
+      .app { width: min(100% - 1rem, 1120px); padding-top: var(--space-4); }
+      .hero-card, .round-panel, .players-panel, .stat-card, .penalty-panel { padding: var(--space-5); }
+      .form-grid, .player-score-row, .penalty-grid { grid-template-columns: 1fr; }
+      .player-meta, .player-card-top, .player-card-bottom { align-items: flex-start; flex-direction: column; }
+      .round-actions, .inline-actions, .toolbar { width: 100%; }
+      .theme-toggle, .secondary-btn, .primary-btn, .warning-btn { width: 100%; justify-content: center; }
+      .toolbar > * { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to content</a>
+  <div class="app">
+    <header class="topbar" aria-label="App header">
+      <div class="brand">
+        <svg class="logo" viewBox="0 0 48 48" aria-label="100 Not Out logo" role="img" fill="none">
+          <circle cx="13" cy="24" r="7.5" stroke="currentColor" stroke-width="3.2"></circle>
+          <circle cx="35" cy="24" r="7.5" stroke="currentColor" stroke-width="3.2"></circle>
+          <path d="M22 14.5L26.7 10v28" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+        <div>
+          <h1>100 Not Out</h1>
+          <p>Track rounds, add penalty points, and knock players out at 100.</p>
+        </div>
+      </div>
+      <div class="toolbar">
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode">🌙 Theme</button>
+        <button class="secondary-btn" type="button" id="newGameBtn">Reset game</button>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero" aria-label="Game overview">
+        <article class="panel hero-card">
+          <h2>How scoring works</h2>
+          <p>For a normal round, the lowest valid show is ignored and the second-lowest number becomes the baseline. Every other player gets penalty points equal to their number minus that second-lowest value.</p>
+          <div class="rules" aria-label="Scoring rules">
+            <div class="rule"><div class="rule-badge">1</div><div><strong>Add players</strong><br><span class="muted">Start with any number of players and keep adding more before or during the game.</span></div></div>
+            <div class="rule"><div class="rule-badge">2</div><div><strong>Wrong show</strong><br><span class="muted">If a player shows wrong show, click the penalty button and that player gets a flat 25 penalty points.</span></div></div>
+            <div class="rule"><div class="rule-badge">3</div><div><strong>Second-lowest counts</strong><br><span class="muted">When scoring the round, the second-lowest number is used as the base for calculating penalties.</span></div></div>
+            <div class="rule"><div class="rule-badge">4</div><div><strong>Reach 100 and you are out</strong><br><span class="muted">Once a player hits 100 or more total penalty points, they are eliminated from the game.</span></div></div>
+          </div>
+        </article>
+
+        <aside class="stats" aria-label="Game stats">
+          <section class="panel stat-card">
+            <div class="stat-label">Active players</div>
+            <div class="stat-value" id="activeCount">0</div>
+            <p>Players still in the game.</p>
+          </section>
+          <section class="panel stat-card">
+            <div class="stat-label">Players out</div>
+            <div class="stat-value" id="outCount">0</div>
+            <p>Players who reached 100 or more.</p>
+          </section>
+          <section class="panel stat-card">
+            <div class="stat-label">Round result</div>
+            <div class="round-summary" id="roundSummary">Add at least two active players to score a round.</div>
+          </section>
+        </aside>
+      </section>
+
+      <section class="layout" aria-label="Game controls and scoreboard">
+        <div class="left-stack">
+          <article class="panel round-panel">
+            <h2>Players and round input</h2>
+            <p class="muted">Add names, then enter one round number for each active player.</p>
+
+            <div class="form-grid">
+              <input id="playerNameInput" class="field" type="text" placeholder="Enter player name" aria-label="Player name" maxlength="30" />
+              <button class="primary-btn" id="addPlayerBtn" type="button">Add player</button>
+            </div>
+
+            <div class="helper">For normal scoring, the lowest number is ignored and the second-lowest number is taken as the baseline.</div>
+            <div class="round-grid" id="roundGrid"></div>
+
+            <div class="round-actions">
+              <button class="primary-btn" id="scoreRoundBtn" type="button">Score round</button>
+              <button class="secondary-btn" id="clearInputsBtn" type="button">Clear round inputs</button>
+            </div>
+
+            <div id="statusArea" class="status-banner" role="status" aria-live="polite">Start by adding players.</div>
+            <div id="winnerArea" aria-live="polite"></div>
+          </article>
+
+          <article class="panel penalty-panel">
+            <h2>Wrong show penalty</h2>
+            <p class="penalty-note">Use this when a player gives a wrong show.</p>
+            <div class="penalty-grid">
+              <select id="penaltyPlayerSelect" class="select-field" aria-label="Choose player for wrong show penalty"></select>
+              <button class="warning-btn" id="applyPenaltyBtn" type="button">Add 25 point penalty</button>
+            </div>
+            <div class="helper">This gives a flat 25 penalty points to the selected player.</div>
+          </article>
+        </div>
+
+        <article class="panel players-panel">
+          <h2>Scoreboard</h2>
+          <p class="muted">Wrong show gives 25 points. Normal round penalties are based on the second-lowest number.</p>
+          <div id="playersList" class="players-list"></div>
+          <div id="emptyState" class="empty-state">
+            <p>Add your first player to begin the game.</p>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const state = {
+      players: [],
+      nextId: 1,
+      roundNumber: 1,
+      theme: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    };
+
+    const els = {
+      root: document.documentElement,
+      themeToggle: document.querySelector('[data-theme-toggle]'),
+      playerNameInput: document.getElementById('playerNameInput'),
+      addPlayerBtn: document.getElementById('addPlayerBtn'),
+      roundGrid: document.getElementById('roundGrid'),
+      playersList: document.getElementById('playersList'),
+      emptyState: document.getElementById('emptyState'),
+      statusArea: document.getElementById('statusArea'),
+      winnerArea: document.getElementById('winnerArea'),
+      activeCount: document.getElementById('activeCount'),
+      outCount: document.getElementById('outCount'),
+      roundSummary: document.getElementById('roundSummary'),
+      scoreRoundBtn: document.getElementById('scoreRoundBtn'),
+      clearInputsBtn: document.getElementById('clearInputsBtn'),
+      newGameBtn: document.getElementById('newGameBtn'),
+      penaltyPlayerSelect: document.getElementById('penaltyPlayerSelect'),
+      applyPenaltyBtn: document.getElementById('applyPenaltyBtn')
+    };
+
+    function setTheme(theme) {
+      state.theme = theme;
+      els.root.setAttribute('data-theme', theme);
+      els.themeToggle.textContent = theme === 'dark' ? '☀️ Theme' : '🌙 Theme';
+      els.themeToggle.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+    }
+
+    function activePlayers() {
+      return state.players.filter(player => !player.out);
+    }
+
+    function addPlayer(name) {
+      state.players.push({
+        id: state.nextId++,
+        name,
+        total: 0,
+        out: false,
+        roundsPlayed: 0,
+        lastPenalty: 0,
+        lastValue: null,
+        outRound: null,
+        lastAction: 'Added'
+      });
+      render();
+      updateStatus(`${name} added to the game.`);
+    }
+
+    function removePlayer(id) {
+      const player = state.players.find(item => item.id === id);
+      state.players = state.players.filter(item => item.id !== id);
+      render();
+      updateStatus(player ? `${player.name} removed from the game.` : 'Player removed.');
+    }
+
+    function updateStatus(message) {
+      els.statusArea.textContent = message;
+    }
+
+    function clearWinnerArea() {
+      els.winnerArea.innerHTML = '';
+    }
+
+    function renderPenaltyOptions() {
+      const active = activePlayers();
+      const previousValue = els.penaltyPlayerSelect.value;
+      els.penaltyPlayerSelect.innerHTML = '';
+
+      if (active.length === 0) {
+        const option = document.createElement('option');
+        option.textContent = 'No active players';
+        option.value = '';
+        els.penaltyPlayerSelect.appendChild(option);
+        els.applyPenaltyBtn.disabled = true;
+        return;
+      }
+
+      active.forEach(player => {
+        const option = document.createElement('option');
+        option.value = String(player.id);
+        option.textContent = player.name;
+        if (previousValue && previousValue === String(player.id)) option.selected = true;
+        els.penaltyPlayerSelect.appendChild(option);
+      });
+
+      if (!els.penaltyPlayerSelect.value && active[0]) {
+        els.penaltyPlayerSelect.value = String(active[0].id);
+      }
+
+      els.applyPenaltyBtn.disabled = false;
+    }
+
+    function renderRoundInputs() {
+      const active = activePlayers();
+      els.roundGrid.innerHTML = '';
+      if (active.length === 0) {
+        els.roundGrid.innerHTML = '<div class="empty-state"><p>Add players to create a round.</p></div>';
+        return;
+      }
+      active.forEach(player => {
+        const row = document.createElement('div');
+        row.className = 'player-score-row';
+        row.innerHTML = `
+          <div class="player-meta">
+            <div>
+              <div class="player-name">${escapeHtml(player.name)}</div>
+              <div class="player-state">Current total: ${player.total}</div>
+            </div>
+            <span class="chip live">In game</span>
+          </div>
+          <input
+            class="score-input"
+            type="number"
+            min="0"
+            inputmode="numeric"
+            placeholder="Round number"
+            aria-label="Round number for ${escapeHtml(player.name)}"
+            data-player-id="${player.id}"
+          />
+        `;
+        els.roundGrid.appendChild(row);
+      });
+    }
+
+    function renderPlayers() {
+      els.playersList.innerHTML = '';
+      els.emptyState.style.display = state.players.length ? 'none' : 'block';
+
+      const sorted = [...state.players].sort((a, b) => {
+        if (a.out !== b.out) return a.out - b.out;
+        if (b.total !== a.total) return b.total - a.total;
+        return a.name.localeCompare(b.name);
+      });
+
+      sorted.forEach(player => {
+        const card = document.createElement('section');
+        card.className = 'player-card';
+        const statusClass = player.out ? 'out' : player.total >= 75 ? 'safe' : 'live';
+        const statusLabel = player.out ? `Out${player.outRound ? ` in ${player.outRound}` : ''}` : player.total >= 75 ? 'Danger zone' : 'In game';
+        card.innerHTML = `
+          <div class="player-card-top">
+            <div>
+              <div class="player-name">${escapeHtml(player.name)}</div>
+              <div class="muted">Rounds played: ${player.roundsPlayed}</div>
+            </div>
+            <span class="chip ${statusClass}">${statusLabel}</span>
+          </div>
+          <div class="player-card-bottom">
+            <div>
+              <div class="muted">Total penalty</div>
+              <div class="score-total">${player.total}</div>
+            </div>
+            <div>
+              <div class="muted">Last change</div>
+              <div class="score-total">${player.lastPenalty ?? 0}</div>
+            </div>
+            <div>
+              <div class="muted">Type</div>
+              <div class="muted">${escapeHtml(player.lastAction || '—')}</div>
+            </div>
+            <div class="inline-actions">
+              <button class="mini-btn" type="button" data-remove-id="${player.id}">Remove</button>
+            </div>
+          </div>
+        `;
+        els.playersList.appendChild(card);
+      });
+    }
+
+    function updateStats() {
+      const active = activePlayers();
+      const out = state.players.filter(player => player.out);
+      els.activeCount.textContent = active.length;
+      els.outCount.textContent = out.length;
+
+      if (state.players.length < 2) {
+        els.roundSummary.textContent = 'Add at least two players to start scoring.';
+      }
+    }
+
+    function renderWinner() {
+      const active = activePlayers();
+      if (state.players.length === 0) {
+        clearWinnerArea();
+        return;
+      }
+      if (active.length === 1) {
+        els.winnerArea.innerHTML = `<div class="winner-banner">${escapeHtml(active[0].name)} is the only player left and wins the game.</div>`;
+      } else if (active.length === 0 && state.players.length > 0) {
+        els.winnerArea.innerHTML = '<div class="winner-banner">All players are out. Reset the game to start again.</div>';
+      } else {
+        clearWinnerArea();
+      }
+    }
+
+    function render() {
+      renderRoundInputs();
+      renderPenaltyOptions();
+      renderPlayers();
+      updateStats();
+      renderWinner();
+    }
+
+    function applyWrongShowPenalty() {
+      const playerId = Number(els.penaltyPlayerSelect.value);
+      const player = state.players.find(item => item.id === playerId && !item.out);
+      if (!player) {
+        updateStatus('Choose an active player for the wrong show penalty.');
+        return;
+      }
+
+      const penaltyPoints = 25;
+      player.total += penaltyPoints;
+      player.lastPenalty = penaltyPoints;
+      player.lastValue = 'Wrong show';
+      player.lastAction = 'Wrong show';
+
+      if (player.total >= 100) {
+        player.out = true;
+        player.outRound = 'manual penalty';
+        updateStatus(`${player.name} received a 25 point wrong show penalty and is now out.`);
+      } else {
+        updateStatus(`${player.name} received a 25 point wrong show penalty.`);
+      }
+
+      els.roundSummary.textContent = `Manual penalty: ${player.name} received +25 for wrong show.`;
+      render();
+    }
+
+    function scoreRound() {
+      const active = activePlayers();
+      if (active.length < 2) {
+        updateStatus('You need at least two active players to score a round.');
+        return;
+      }
+
+      const inputs = [...document.querySelectorAll('[data-player-id]')];
+      const roundValues = [];
+
+      for (const input of inputs) {
+        const raw = input.value.trim();
+        if (raw === '') {
+          updateStatus('Enter a round number for every active player.');
+          input.focus();
+          return;
+        }
+        const value = Number(raw);
+        if (!Number.isFinite(value) || value < 0) {
+          updateStatus('Round numbers must be 0 or higher.');
+          input.focus();
+          return;
+        }
+        roundValues.push({ playerId: Number(input.dataset.playerId), value });
+      }
+
+      const sortedValues = [...roundValues].sort((a, b) => a.value - b.value);
+      const baseline = sortedValues.length > 1 ? sortedValues[1].value : sortedValues[0].value;
+      const ignoredLowest = sortedValues[0].value;
+      const knockedOut = [];
+      const summaryParts = [];
+
+      roundValues.forEach(item => {
+        const player = state.players.find(entry => entry.id === item.playerId);
+        if (!player || player.out) return;
+
+        const penalty = item.value <= baseline ? 0 : item.value - baseline;
+        player.total += penalty;
+        player.roundsPlayed += 1;
+        player.lastPenalty = penalty;
+        player.lastValue = item.value;
+        player.lastAction = `Round ${state.roundNumber}`;
+        summaryParts.push(`${player.name}: ${item.value} → +${penalty}`);
+
+        if (player.total >= 100) {
+          player.out = true;
+          player.outRound = `round ${state.roundNumber}`;
+          knockedOut.push(player.name);
+        }
+      });
+
+      els.roundSummary.textContent = `Round ${state.roundNumber}: lowest ${ignoredLowest} ignored, second-lowest ${baseline} used. ${summaryParts.join(' · ')}`;
+
+      if (knockedOut.length > 0) {
+        updateStatus(`Round ${state.roundNumber} scored. Out: ${knockedOut.join(', ')}.`);
+      } else {
+        updateStatus(`Round ${state.roundNumber} scored. Second-lowest number was ${baseline}.`);
+      }
+
+      state.roundNumber += 1;
+      render();
+      clearRoundInputs();
+    }
+
+    function clearRoundInputs() {
+      document.querySelectorAll('[data-player-id]').forEach(input => { input.value = ''; });
+    }
+
+    function resetGame() {
+      state.players = [];
+      state.nextId = 1;
+      state.roundNumber = 1;
+      clearWinnerArea();
+      updateStatus('Game reset. Add players to start again.');
+      els.roundSummary.textContent = 'Add at least two players to start scoring.';
+      render();
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    els.themeToggle.addEventListener('click', () => {
+      setTheme(state.theme === 'dark' ? 'light' : 'dark');
+    });
+
+    els.addPlayerBtn.addEventListener('click', () => {
+      const name = els.playerNameInput.value.trim();
+      if (!name) {
+        updateStatus('Enter a player name first.');
+        els.playerNameInput.focus();
+        return;
+      }
+      addPlayer(name);
+      els.playerNameInput.value = '';
+      els.playerNameInput.focus();
+    });
+
+    els.playerNameInput.addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        els.addPlayerBtn.click();
+      }
+    });
+
+    els.scoreRoundBtn.addEventListener('click', scoreRound);
+    els.clearInputsBtn.addEventListener('click', () => {
+      clearRoundInputs();
+      updateStatus('Round inputs cleared.');
+    });
+    els.newGameBtn.addEventListener('click', resetGame);
+    els.applyPenaltyBtn.addEventListener('click', applyWrongShowPenalty);
+
+    els.playersList.addEventListener('click', event => {
+      const button = event.target.closest('[data-remove-id]');
+      if (!button) return;
+      removePlayer(Number(button.dataset.removeId));
+    });
+
+    setTheme(state.theme);
+    render();
+  </script>
+</body>
+</html>
